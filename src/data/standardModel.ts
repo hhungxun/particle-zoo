@@ -35,7 +35,7 @@ export const SM_PARTICLES: SMParticle[] = [
   { id: 'electron',  name: 'electron', symbol: 'e', category: 'lepton', generation: 1, discoveredByEventId: 'thomson-1897' },
   { id: 'neutrino-e', name: 'e neutrino', symbol: 'νₑ', category: 'lepton', generation: 1, discoveredByEventId: 'pauli-1930' },
   // Leptons — generation 2
-  { id: 'muon',      name: 'muon',     symbol: 'μ', category: 'lepton', generation: 2, discoveredByEventId: null },
+  { id: 'muon',      name: 'muon',     symbol: 'μ', category: 'lepton', generation: 2, discoveredByEventId: 'muon-1937' },
   { id: 'neutrino-mu', name: 'μ neutrino', symbol: 'νμ', category: 'lepton', generation: 2, discoveredByEventId: null },
   // Leptons — generation 3
   { id: 'tau',       name: 'tau',      symbol: 'τ', category: 'lepton', generation: 3, discoveredByEventId: null },

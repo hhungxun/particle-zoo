@@ -428,7 +428,178 @@ export const ERAS: TimelineEra[] = [
     bgTint: '#f6f1f7',
     blurb:
       'With the electron, proton, neutron, and photon in hand, the question turned to the forces. What held the nucleus together against the protons\' mutual repulsion? What rules governed beta decay? Theorists invented particles to mediate these forces; experimentalists, looking in cosmic rays, found particles that did not match.',
-    events: [],
+    events: [
+      {
+        id: 'fermi-1934',
+        year: 1934,
+        yearLabel: '1934',
+        headline: 'Rejected by Nature',
+        shortTitle: 'Fermi β decay',
+        discipline: 'theory',
+        discoverers: [
+          { name: 'Enrico Fermi', affiliation: 'University of Rome' },
+        ],
+        narrative: [
+          'Pauli\'s neutrino hypothesis had been circulating since 1930, but nobody had built a quantitative theory around it. Fermi did. He treated beta decay as a four-fermion interaction — a proton, neutron, electron, and neutrino meeting at a single spacetime point — with a coupling constant G_F chosen to fit the observed decay rates. The resulting Lagrangian was elegant: a product of four spinor fields, contracted to form a Lorentz scalar, multiplied by a single number. It was the first serious theory of the weak force.',
+          'Fermi submitted the paper to Nature. They rejected it — it contained "speculations too remote from reality to be of interest to the reader." The paper was published in Italian in Nuovo Cimento and in German in Zeitschrift für Physik. The German version is the one everyone cited for decades; the Italian journal had limited international circulation during the 1930s.',
+          'Fermi\'s theory predicted the shape of beta spectra correctly and gave a numerical value for the coupling constant (~10⁻⁵ in natural units — absurdly weak compared to electromagnetism). The theory was not complete; the coupling was point-like, which meant it broke down at high energies. But it was the correct low-energy limit of what would later become the electroweak theory.',
+        ],
+        whyItMattered:
+          'The first quantitative theory of the weak force. Introduced the four-fermion interaction that would persist, with modifications, until the gauge-theory era.',
+        paper: {
+          authors: 'Fermi, E.',
+          title: 'Tentativo di una teoria dei raggi beta',
+          journal: 'Nuovo Cimento',
+          volume: '11',
+          pages: '1–19',
+          year: 1934,
+          doi: '10.1007/BF02959820',
+          abstractParaphrase:
+            'A theory of beta decay based on the emission of an electron and a neutrino (Pauli\'s particle) from the nucleus, with a contact interaction between the four fermion fields. The spectrum shape and half-lives of beta emitters are calculated and agree with experiment.',
+          verified: true,
+        },
+        anecdote: {
+          text: 'Nature\'s rejection letter has not survived, but Fermi himself recounted the episode. The story is widely told that the rejection contained the phrase about "speculations too remote from reality." Fermi did not wait; he immediately sent the paper to Italian and German journals. The German translation (Zeitschrift für Physik 88, 161–177, 1934) became the standard reference outside Italy.',
+          source:
+            'Segre, E. "Enrico Fermi, Physicist" (University of Chicago Press, 1970), p. 73. [VERIFY — exact wording of Nature\'s rejection]',
+          verified: false,
+        },
+        visual: 'fermi-beta',
+        equationsLatex: [
+          '\\mathcal{L} = G_F (\\bar{p}\\,\\gamma^\\mu n)(\\bar{e}\\,\\gamma_\\mu \\nu) + \\text{h.c.}',
+        ],
+        particles: ['neutrino-e'],
+      },
+      {
+        id: 'yukawa-1935',
+        year: 1935,
+        yearLabel: '1935',
+        headline: 'A Force Carrier with Mass',
+        shortTitle: 'Yukawa meson',
+        discipline: 'theory',
+        discoverers: [
+          { name: 'Hideki Yukawa', affiliation: 'Osaka University' },
+        ],
+        narrative: [
+          'The strong force holding the nucleus together had a range of about a femtometre — roughly the size of the nucleus itself. Yukawa\'s insight was to connect this range to the mass of the force-carrying particle. In quantum field theory, a force mediated by a massive particle falls off exponentially with a characteristic length ℏ/(mc). If you want a force of range ~1 fm, you need a mediator of mass ~ℏc/(1 fm) ≈ 200 MeV — about 200 times the electron\'s mass.',
+          'Yukawa wrote down a field equation for a massive spin-0 boson — the "meson" — and showed that its exchange between nucleons produced a short-range attractive potential of exactly the right form. It was the first prediction of a new particle from dimensional analysis of a force range, and it was the first application of the idea that forces are mediated by particles to the nuclear domain.',
+          'The paper was published in a Japanese journal with limited international circulation. It took two years before it was widely noticed outside Japan — and then, when a particle of roughly the right mass was found in cosmic rays, the identification seemed spectacularly confirmed. It wasn\'t. The particle in the cosmic rays was the muon.',
+        ],
+        whyItMattered:
+          'The first prediction of a force carrier from the range of a force. Introduced the idea that nuclear forces are mediated by massive bosons — the template for all later gauge theories.',
+        paper: {
+          authors: 'Yukawa, H.',
+          title: 'On the Interaction of Elementary Particles',
+          journal: 'Proceedings of the Physico-Mathematical Society of Japan',
+          volume: '17',
+          pages: '48–57',
+          year: 1935,
+          abstractParaphrase:
+            'A theory of nuclear forces in which the interaction between nucleons is mediated by a massive spin-0 field. The mass of the field quantum is estimated from the range of nuclear forces to be approximately 200 times the electron mass.',
+          verified: true,
+        },
+        anecdote: {
+          text: 'Yukawa later said that the idea came to him while watching the surf at Lake Biwa. The exponential fall-off of a Yukawa potential is sometimes described, in textbooks that love the metaphor, as a force that "damps like a wave." This is probably not what he was thinking about at the lake.',
+          source: 'Commonly told but unverified',
+          verified: false,
+        },
+        visual: 'yukawa',
+        equationsLatex: [
+          'V(r) = -\\frac{g^2}{4\\pi}\\frac{e^{-m_\\pi r}}{r}',
+          '\\quad m_\\pi \\approx \\frac{\\hbar}{c \\cdot (1\\ \\text{fm})} \\approx 200\\ \\text{MeV}',
+        ],
+        particles: ['pion'],
+      },
+      {
+        id: 'muon-1937',
+        year: 1937,
+        yearLabel: '1937',
+        headline: 'Who Ordered That?',
+        shortTitle: 'Muon',
+        discipline: 'experiment',
+        discoverers: [
+          { name: 'Carl D. Anderson', affiliation: 'California Institute of Technology' },
+          { name: 'Seth Neddermeyer', affiliation: 'California Institute of Technology' },
+        ],
+        narrative: [
+          'In 1937, Anderson and Neddermeyer, still working with cloud chambers in cosmic rays, found a particle with mass between the electron and the proton — roughly 106 MeV, or about 200 times the electron mass. This was almost exactly what Yukawa had predicted. The discovery was headline news: the nuclear force mediator had been found.',
+          'Over the next decade, it became clear that something was wrong. Conversi, Pancini, and Piccioni showed in 1945–47 that the cosmic-ray meson interacted extremely weakly with nuclei — it passed through dense matter almost as freely as an electron. A strong-force mediator should have been absorbed by nuclei within centimetres of iron. This particle was not Yukawa\'s meson. It was a heavy cousin of the electron, with no obvious role in the nuclear force, and no discernible reason to exist.',
+          'Rabi\'s response — "Who ordered that?" — captured the bewilderment. The muon was the second-generation copy of the electron: same charge, same spin, same weak interactions, but 207 times heavier. Why nature should duplicate the electron in this way was a complete mystery in 1937 and remains one today.',
+        ],
+        whyItMattered:
+          'The first hint of fermion generations. The muon looked like an electron but heavier, with no role in nuclear forces — and no explanation for its existence.',
+        paper: {
+          authors: 'Neddermeyer, S.H. and Anderson, C.D.',
+          title: 'Note on the Nature of Cosmic Ray Particles',
+          journal: 'Physical Review',
+          volume: '51',
+          pages: '884–886',
+          year: 1937,
+          doi: '10.1103/PhysRev.51.884',
+          abstractParaphrase:
+            'Cosmic-ray particles are observed with masses intermediate between the electron and the proton. Their penetrating power suggests they are not consistent with known electrons or protons; the authors propose they constitute a new particle type.',
+          verified: true,
+        },
+        anecdote: {
+          text: 'Rabi\'s "Who ordered that?" is universally quoted but its exact provenance is unclear. It appears in no published paper by Rabi; it was reportedly said at a seminar, possibly at Columbia in the late 1940s, and repeated orally until it entered the folklore. The closest published source is Rabi\'s autobiography, where he discusses the muon\'s puzzling nature without using this exact phrase.',
+          source:
+            'Commonly attributed to Rabi; exact wording and occasion unverified. See also Rigden, J.S. "Rabi: Scientist and Citizen" (Harvard, 2000).',
+          verified: false,
+        },
+        visual: 'positron-track',
+        particles: ['muon'],
+      },
+      {
+        id: 'pion-1947',
+        year: 1947,
+        yearLabel: '1947',
+        headline: "Yukawa's Particle, Twelve Years Late",
+        shortTitle: 'Pion',
+        discipline: 'experiment',
+        discoverers: [
+          { name: 'Cecil Powell', affiliation: 'University of Bristol' },
+          { name: 'Giuseppe Occhialini', affiliation: 'University of Bristol' },
+          { name: 'César Lattes', affiliation: 'University of Bristol / University of São Paulo' },
+        ],
+        narrative: [
+          'The problem with the cosmic-ray "meson" was that it didn\'t interact strongly. Powell\'s group at Bristol had developed a technique using photographic emulsions — essentially, ultra-fine-grained photographic plates exposed to cosmic rays at high altitude. When a charged particle passes through the emulsion, it leaves a track of silver grains that can be measured under a microscope with micrometre precision.',
+          'In 1947, Powell, Occhialini, and Lattes identified two events in which a heavier particle — the pi-meson, or pion — decayed into the lighter "meson" (the muon) plus an unseen neutral particle. The pion, at ~140 MeV, was slightly heavier than the muon, and it interacted strongly with nuclei, exactly as Yukawa\'s theory required. The muon was merely the pion\'s decay product — a spectator in nuclear physics.',
+          'The discovery settled the confusion. Yukawa had been right about the mass and the role; he had been wrong only in that the first particle found at that mass scale turned out to be the wrong one. The pion was the real mediator of the nuclear force. The muon was something else entirely.',
+        ],
+        whyItMattered:
+          "Confirmed Yukawa's prediction of a nuclear force mediator. Separated the pion (strong interaction) from the muon (weak interaction), ending a decade of confusion.",
+        papers: [
+          {
+            authors: 'Lattes, C.M.G., Occhialini, G.P.S., and Powell, C.F.',
+            title: 'Observations on the Tracks of Slow Mesons in Photographic Emulsions',
+            journal: 'Nature',
+            volume: '160',
+            pages: '453–456',
+            year: 1947,
+            doi: '10.1038/160453a0',
+            verified: true,
+          },
+          {
+            authors: 'Lattes, C.M.G., Occhialini, G.P.S., and Powell, C.F.',
+            title: 'Observations on the Tracks of Slow Mesons in Photographic Emulsions. Part II',
+            journal: 'Nature',
+            volume: '160',
+            pages: '486–492',
+            year: 1947,
+            verified: true,
+          },
+        ],
+        anecdote: {
+          text: 'Lattes, a young Brazilian physicist, was the one who identified the decay events by painstakingly scanning emulsion plates under a microscope. He reportedly worked through the night. Powell won the 1950 Nobel Prize for the discovery; Lattes and Occhialini did not share it. Lattes was 23 at the time.',
+          source:
+            "Powell's Nobel lecture, 1950; widely reported in biographical accounts of Lattes.",
+          verified: true,
+        },
+        visual: 'pion-emulsion',
+        equationsLatex: ['\\pi^+ \\rightarrow \\mu^+ + \\nu_\\mu'],
+        particles: ['pion', 'muon'],
+      },
+    ],
   },
   {
     id: 'era-3',

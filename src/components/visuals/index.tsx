@@ -7,6 +7,9 @@ import { Photoelectric } from './Photoelectric';
 import { DiracEquation } from './DiracEquation';
 import { NeutrinoLetter } from './NeutrinoLetter';
 import { PositronTrack } from './PositronTrack';
+import { FermiBeta } from './FermiBeta';
+import { Yukawa } from './Yukawa';
+import { PionEmulsion } from './PionEmulsion';
 
 interface Props {
   visualKey?: VisualKey;
@@ -27,6 +30,9 @@ export function Visual({ visualKey }: Props) {
     case 'dirac-eq':         return <DiracEquation />;
     case 'neutrino-letter':  return <NeutrinoLetter />;
     case 'positron-track':   return <PositronTrack />;
+    case 'fermi-beta':       return <FermiBeta />;
+    case 'yukawa':           return <Yukawa />;
+    case 'pion-emulsion':    return <PionEmulsion />;
     default: return null;
   }
 }

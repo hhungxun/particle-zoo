@@ -1,18 +1,51 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
 import { ERAS } from './data/timeline';
-import { PARTICLE_ALIASES } from './data/standardModel';
+import { PARTICLE_ALIASES, SM_PARTICLES } from './data/standardModel';
 import type { FilterMode } from './types';
 import { EraSection } from './components/EraSection';
 import { EraNavigation } from './components/EraNavigation';
 import { ReadingProgress } from './components/ReadingProgress';
 import { FilterToggle } from './components/FilterToggle';
 import { StandardModelTracker } from './components/StandardModelTracker';
+import { KeyboardHelp } from './components/KeyboardHelp';
+
+/** Build a lookup: particle id → the event that discovered it. */
+function buildParticleEventMap() {
+  const map: Record<string, { eventId: string; headline: string; yearLabel: string }> = {};
+  for (const era of ERAS) {
+    for (const evt of era.events) {
+      if (!evt.particles) continue;
+      for (const p of evt.particles) {
+        const mapped = PARTICLE_ALIASES[p] ?? p;
+        if (!map[mapped]) {
+          map[mapped] = { eventId: evt.id, headline: evt.headline, yearLabel: evt.yearLabel };
+        }
+      }
+    }
+  }
+  // Also map from SM particle IDs directly
+  for (const p of SM_PARTICLES) {
+    if (p.discoveredByEventId && !map[p.id]) {
+      for (const era of ERAS) {
+        const evt = era.events.find((e) => e.id === p.discoveredByEventId);
+        if (evt) {
+          map[p.id] = { eventId: evt.id, headline: evt.headline, yearLabel: evt.yearLabel };
+          break;
+        }
+      }
+    }
+  }
+  return map;
+}
+
+const PARTICLE_EVENT_MAP = buildParticleEventMap();
 
 function App() {
   const [filter, setFilter] = useState<FilterMode>('all');
   const [activeEraId, setActiveEraId] = useState<string>(ERAS[0].id);
   const [activeEventId, setActiveEventId] = useState<string | undefined>(undefined);
   const [discoveredParticles, setDiscoveredParticles] = useState<Set<string>>(new Set());
+  const [showHelp, setShowHelp] = useState(false);
 
   const onEraEnter = useCallback((id: string) => setActiveEraId(id), []);
 
@@ -25,9 +58,6 @@ function App() {
         setDiscoveredParticles((prev) => {
           const next = new Set(prev);
           for (const p of evt.particles!) {
-            // Composite particles (proton, neutron) have no SM entry and
-            // are silently skipped.  Antimatter aliases map to their
-            // fundamental partner.
             const mapped = PARTICLE_ALIASES[p] ?? p;
             next.add(mapped);
           }
@@ -42,15 +72,33 @@ function App() {
     [activeEraId],
   );
 
+  // Keyboard shortcuts: T = theory, E = experiment, A = all, ? = help
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const key = e.key.toLowerCase();
+      if (key === 't') setFilter('theory');
+      else if (key === 'e') setFilter('experiment');
+      else if (key === 'a') setFilter('all');
+      else if (key === '?') setShowHelp((s) => !s);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   return (
     <div className="min-h-screen bg-paper text-ink-700">
+      <KeyboardHelp open={showHelp} onClose={() => setShowHelp(false)} />
       <ReadingProgress activeAccent={activeEra.accent} />
       <EraNavigation
         eras={ERAS}
         activeEraId={activeEraId}
         activeEventId={activeEventId}
       />
-      <StandardModelTracker discovered={discoveredParticles} />
+      <StandardModelTracker
+        discovered={discoveredParticles}
+        particleEventMap={PARTICLE_EVENT_MAP}
+      />
 
       {/* Top toolbar */}
       <header className="sticky top-0 z-20 backdrop-blur-md bg-paper/80 border-b border-rule">
