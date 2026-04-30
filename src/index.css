@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,500&family=JetBrains+Mono:wght@400;500&display=swap');
+@import 'katex/dist/katex.min.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-paper text-ink-700 font-serif antialiased;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'kern', 'liga', 'onum';
+  }
+  h1, h2, h3, h4, h5 {
+    @apply font-sans font-semibold text-ink-800 tracking-tight;
+  }
+  a {
+    @apply underline decoration-rule decoration-1 underline-offset-4 hover:decoration-ink-700;
+  }
+  ::selection {
+    background: rgba(156, 90, 44, 0.18);
+  }
+}
+
+@layer components {
+  .prose-essay {
+    @apply text-[1.0625rem] leading-[1.75] text-ink-700;
+  }
+  .small-caps {
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.08em;
+  }
+  .ui-label {
+    @apply font-sans text-xs uppercase tracking-[0.18em] text-ink-500;
+  }
+  .drop-cap::first-letter {
+    @apply float-left mr-2 mt-1 font-serif text-6xl font-semibold leading-[0.85] text-ink-800;
+  }
+  .rule {
+    @apply border-t border-rule;
+  }
+  /* Era accent shorthand using CSS vars set per-section */
+  .era-accent { color: var(--era-accent, theme('colors.ink.700')); }
+  .era-bg     { background: var(--era-bg, theme('colors.paper')); }
+}
