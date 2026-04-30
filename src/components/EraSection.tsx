@@ -2,6 +2,8 @@ import { useInView } from 'react-intersection-observer';
 import { motion } from 'framer-motion';
 import type { TimelineEra, FilterMode } from '../types';
 import { EventCard } from './EventCard';
+import { GlossaryText } from './GlossaryText';
+import { CompareMode } from './CompareMode';
 
 interface Props {
   era: TimelineEra;
@@ -10,9 +12,18 @@ interface Props {
   onEnter?: (eraId: string) => void;
   /** Notify parent when an event in this era is the active one. */
   onEventEnter?: (eventId: string) => void;
+  highlightedEventId?: string;
+  onCompareEventOpen?: (eventId: string) => void;
 }
 
-export function EraSection({ era, filter, onEnter, onEventEnter }: Props) {
+export function EraSection({
+  era,
+  filter,
+  onEnter,
+  onEventEnter,
+  highlightedEventId,
+  onCompareEventOpen,
+}: Props) {
   const { ref } = useInView({
     threshold: 0.15,
     onChange: (inView) => {
@@ -60,16 +71,23 @@ export function EraSection({ era, filter, onEnter, onEventEnter }: Props) {
             {era.title}
           </h2>
           <p className="mt-6 max-w-readable text-lg leading-relaxed text-ink-600 italic">
-            {era.blurb}
+            <GlossaryText text={era.blurb} />
           </p>
         </motion.div>
       </header>
 
-      <div className="mx-auto max-w-wide px-6 pb-16 lg:pb-24 divide-y divide-rule">
+      <div
+        className={[
+          'mx-auto max-w-wide px-6 pb-16 lg:pb-24',
+          filter === 'compare' ? '' : 'divide-y divide-rule',
+        ].join(' ')}
+      >
         {era.events.length === 0 ? (
           <p className="py-16 text-center text-ink-500 italic">
             Era content coming next.
           </p>
+        ) : filter === 'compare' ? (
+          <CompareMode era={era} onOpenEvent={onCompareEventOpen} />
         ) : (
           era.events.map((evt, i) => (
             <EventCard
@@ -78,6 +96,7 @@ export function EraSection({ era, filter, onEnter, onEventEnter }: Props) {
               filter={filter}
               footnoteNumber={i + 1}
               onEnter={onEventEnter}
+              highlighted={evt.id === highlightedEventId}
             />
           ))
         )}

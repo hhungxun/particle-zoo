@@ -27,6 +27,12 @@ export function EraNavigation({ eras, activeEraId, activeEventId }: Props) {
     }
   }
 
+  const activeEventEraId =
+    activeEventId
+      ? eras.find((era) => era.events.some((evt) => evt.id === activeEventId))?.id
+      : undefined;
+  const displayActiveEraId = activeEventEraId ?? activeEraId;
+
   const focusTarget = (id: string) => {
     const el = document.getElementById(id);
     el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -48,11 +54,11 @@ export function EraNavigation({ eras, activeEraId, activeEventId }: Props) {
   return (
     <nav
       aria-label="Timeline navigation"
-      className="hidden lg:block fixed left-6 top-24 z-20 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2"
+      className="hidden lg:block fixed left-6 top-24 z-20 max-h-[calc(100vh-8rem)] overflow-y-auto scrollbar-none pr-2"
     >
       <ol className="space-y-3">
         {eras.map((era) => {
-          const eraActive = era.id === activeEraId;
+          const eraActive = era.id === displayActiveEraId;
           const eraFlatIdx = flat.findIndex((t) => t.id === era.id);
           return (
             <li key={era.id}>

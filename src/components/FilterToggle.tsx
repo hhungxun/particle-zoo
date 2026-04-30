@@ -9,6 +9,7 @@ const OPTS: { id: FilterMode; label: string }[] = [
   { id: 'all', label: 'All' },
   { id: 'theory', label: 'Theorists' },
   { id: 'experiment', label: 'Experimentalists' },
+  { id: 'compare', label: 'Compare' },
 ];
 
 export function FilterToggle({ filter, onChange }: Props) {

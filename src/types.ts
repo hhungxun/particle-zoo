@@ -66,7 +66,14 @@ export type VisualKey =
   | 'sk-oscillation'
   | 'donut'
   | 'positron-track'
-  | 'planck-quantum';
+  | 'planck-quantum'
+  | 'muon-track'
+  | 'reines-cowan'
+  | 'goldhaber-helicity'
+  | 'glashow-electroweak'
+  | 'renormalizability'
+  | 'tau-missing-energy'
+  | 'standard-model-open-questions';
 
 export interface TimelineEvent {
   id: string;                      // slug, used for anchors and react keys
@@ -76,6 +83,7 @@ export interface TimelineEvent {
   shortTitle: string;              // for nav scrubber
   discipline: DisciplineTag;
   discoverers: Discoverer[];
+  summary?: string;                 // optional 1-2 sentence collapsed-card summary
   narrative: string[];             // 2–4 paragraphs
   whyItMattered: string;
   paper?: PaperCitation;           // single primary paper
@@ -100,4 +108,4 @@ export interface TimelineEra {
   events: TimelineEvent[];
 }
 
-export type FilterMode = 'all' | 'theory' | 'experiment';
+export type FilterMode = 'all' | 'theory' | 'experiment' | 'compare';

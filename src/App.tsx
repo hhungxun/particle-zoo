@@ -8,6 +8,7 @@ import { ReadingProgress } from './components/ReadingProgress';
 import { FilterToggle } from './components/FilterToggle';
 import { StandardModelTracker } from './components/StandardModelTracker';
 import { KeyboardHelp } from './components/KeyboardHelp';
+import { ParticlePassport } from './components/ParticlePassport';
 
 /** Build a lookup: particle id → the event that discovered it. */
 function buildParticleEventMap() {
@@ -44,27 +45,14 @@ function App() {
   const [filter, setFilter] = useState<FilterMode>('all');
   const [activeEraId, setActiveEraId] = useState<string>(ERAS[0].id);
   const [activeEventId, setActiveEventId] = useState<string | undefined>(undefined);
-  const [discoveredParticles, setDiscoveredParticles] = useState<Set<string>>(new Set());
   const [showHelp, setShowHelp] = useState(false);
+  const [selectedParticleId, setSelectedParticleId] = useState<string | undefined>(undefined);
+  const [highlightedEventId, setHighlightedEventId] = useState<string | undefined>(undefined);
 
   const onEraEnter = useCallback((id: string) => setActiveEraId(id), []);
 
   const onEventEnter = useCallback((id: string) => {
     setActiveEventId(id);
-    // Accumulate any newly-discovered fundamental particles from this event.
-    for (const era of ERAS) {
-      const evt = era.events.find((e) => e.id === id);
-      if (evt?.particles) {
-        setDiscoveredParticles((prev) => {
-          const next = new Set(prev);
-          for (const p of evt.particles!) {
-            const mapped = PARTICLE_ALIASES[p] ?? p;
-            next.add(mapped);
-          }
-          return next;
-        });
-      }
-    }
   }, []);
 
   const activeEra = useMemo(
@@ -72,7 +60,63 @@ function App() {
     [activeEraId],
   );
 
-  // Keyboard shortcuts: T = theory, E = experiment, A = all, ? = help
+  const particleById = useMemo(
+    () => Object.fromEntries(SM_PARTICLES.map((particle) => [particle.id, particle])),
+    [],
+  );
+
+  const discoveredParticles = useMemo(() => {
+    const discovered = new Set<string>();
+    let reachedCurrentPosition = false;
+
+    for (const era of ERAS) {
+      if (!activeEventId && era.id === activeEraId) break;
+
+      for (const evt of era.events) {
+        if (evt.particles) {
+          for (const p of evt.particles) {
+            discovered.add(PARTICLE_ALIASES[p] ?? p);
+          }
+        }
+
+        if (evt.id === activeEventId) {
+          reachedCurrentPosition = true;
+          break;
+        }
+      }
+
+      if (reachedCurrentPosition) break;
+      if (!activeEventId && era.id === activeEraId) break;
+    }
+
+    return discovered;
+  }, [activeEraId, activeEventId]);
+
+  const handleParticleSelect = useCallback((
+    particleId: string,
+    info?: { eventId: string; headline: string; yearLabel: string },
+  ) => {
+    setSelectedParticleId(particleId);
+    setHighlightedEventId(info?.eventId);
+    if (info?.eventId) {
+      window.setTimeout(() => {
+        setHighlightedEventId((current) => (current === info.eventId ? undefined : current));
+      }, 5000);
+    }
+  }, []);
+
+  const handleCompareEventOpen = useCallback((eventId: string) => {
+    setFilter('all');
+    setHighlightedEventId(eventId);
+    window.setTimeout(() => {
+      document.getElementById(eventId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+    window.setTimeout(() => {
+      setHighlightedEventId((current) => (current === eventId ? undefined : current));
+    }, 5000);
+  }, []);
+
+  // Keyboard shortcuts: T = theory, E = experiment, A = all, C = compare, ? = help
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
@@ -80,6 +124,7 @@ function App() {
       if (key === 't') setFilter('theory');
       else if (key === 'e') setFilter('experiment');
       else if (key === 'a') setFilter('all');
+      else if (key === 'c') setFilter('compare');
       else if (key === '?') setShowHelp((s) => !s);
     };
     window.addEventListener('keydown', onKey);
@@ -90,14 +135,28 @@ function App() {
     <div className="min-h-screen bg-paper text-ink-700">
       <KeyboardHelp open={showHelp} onClose={() => setShowHelp(false)} />
       <ReadingProgress activeAccent={activeEra.accent} />
-      <EraNavigation
-        eras={ERAS}
-        activeEraId={activeEraId}
-        activeEventId={activeEventId}
-      />
-      <StandardModelTracker
-        discovered={discoveredParticles}
-        particleEventMap={PARTICLE_EVENT_MAP}
+      {filter !== 'compare' ? (
+        <EraNavigation
+          eras={ERAS}
+          activeEraId={activeEraId}
+          activeEventId={activeEventId}
+        />
+      ) : null}
+      {filter !== 'compare' ? (
+        <StandardModelTracker
+          discovered={discoveredParticles}
+          particleEventMap={PARTICLE_EVENT_MAP}
+          selectedParticleId={selectedParticleId}
+          onParticleSelect={handleParticleSelect}
+        />
+      ) : null}
+      <ParticlePassport
+        particle={selectedParticleId ? particleById[selectedParticleId] : undefined}
+        discovery={selectedParticleId ? PARTICLE_EVENT_MAP[selectedParticleId] : undefined}
+        onClose={() => {
+          setSelectedParticleId(undefined);
+          setHighlightedEventId(undefined);
+        }}
       />
 
       {/* Top toolbar */}
@@ -125,15 +184,10 @@ function App() {
           The Particle Zoo
         </h1>
         <p className="mt-6 max-w-readable text-xl md:text-2xl leading-snug text-ink-600 font-serif italic">
-          One hundred and fifteen years of particle physics — from the corpuscle
-          in a glass tube in Cambridge to the boson in a 27-kilometre ring under
-          the French–Swiss border.
+          150 years of particle physics.
         </p>
         <p className="mt-10 max-w-readable text-ink-600">
-          Scroll to begin. The bar above tracks how far you have come; the dots
-          on the left mark where you are. A discovery in <em>theory</em> is set
-          beside a discovery in <em>experiment</em>; you can dim either with
-          the toggle in the toolbar.
+          Scroll to begin, or switch to Compare to see predictions and tests as paired case studies.
         </p>
       </section>
 
@@ -146,6 +200,8 @@ function App() {
             filter={filter}
             onEnter={onEraEnter}
             onEventEnter={onEventEnter}
+            highlightedEventId={highlightedEventId}
+            onCompareEventOpen={handleCompareEventOpen}
           />
         ))}
       </main>

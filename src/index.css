@@ -42,6 +42,23 @@
   .rule {
     @apply border-t border-rule;
   }
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .glossary-term {
+    @apply relative inline cursor-help rounded-sm bg-amber-100/45 px-0.5 underline decoration-amber-500/50 decoration-dotted underline-offset-4 outline-none;
+  }
+  .glossary-tip {
+    @apply pointer-events-none absolute left-1/2 bottom-full z-40 mb-2 hidden w-64 -translate-x-1/2 rounded-md bg-ink-800 px-3 py-2 font-sans text-xs normal-case leading-snug tracking-normal text-paper shadow-lg;
+  }
+  .glossary-term:hover .glossary-tip,
+  .glossary-term:focus .glossary-tip {
+    @apply block;
+  }
   /* Era accent shorthand using CSS vars set per-section */
   .era-accent { color: var(--era-accent, theme('colors.ink.700')); }
   .era-bg     { background: var(--era-bg, theme('colors.paper')); }

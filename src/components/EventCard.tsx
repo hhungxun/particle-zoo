@@ -8,6 +8,7 @@ import { Anecdote } from './Anecdote';
 import { ExpandablePanel } from './ExpandablePanel';
 import { Visual } from './visuals';
 import { Equation } from './Equation';
+import { GlossaryText } from './GlossaryText';
 
 interface Props {
   event: TimelineEvent;
@@ -16,6 +17,7 @@ interface Props {
   footnoteNumber?: number;
   /** Fired when this event is in view (for nav active-event tracking). */
   onEnter?: (eventId: string) => void;
+  highlighted?: boolean;
 }
 
 const REVEAL_TRANSITION: Transition = {
@@ -23,8 +25,28 @@ const REVEAL_TRANSITION: Transition = {
   ease: [0.2, 0.7, 0.2, 1] as [number, number, number, number],
 };
 const DIM_TRANSITION: Transition = { duration: 0.35, ease: 'easeOut' };
+const PROTECTED_DOT = '<dot>';
 
-export function EventCard({ event, filter, footnoteNumber, onEnter }: Props) {
+function getEventSummary(event: TimelineEvent) {
+  if (event.summary) return event.summary;
+
+  const source = event.narrative[0] ?? event.whyItMattered;
+  const protectedSource = source
+    .replace(/\b([A-Z])\./g, `$1${PROTECTED_DOT}`)
+    .replace(/\b(e|i)\.g\./gi, (match) => match.replace(/\./g, PROTECTED_DOT))
+    .replace(/\b(vs|Mr|Mrs|Ms|Dr|Prof|St)\./g, (match) =>
+      match.replace('.', PROTECTED_DOT),
+    );
+
+  const sentences = protectedSource
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.replaceAll(PROTECTED_DOT, '.').trim())
+    .filter(Boolean);
+
+  return sentences.slice(0, 2).join(' ') || source;
+}
+
+export function EventCard({ event, filter, footnoteNumber, onEnter, highlighted }: Props) {
   // Reveal-on-scroll uses a single-shot observer.
   const { ref: revealRef, inView: revealInView } = useInView({
     triggerOnce: true,
@@ -52,17 +74,18 @@ export function EventCard({ event, filter, footnoteNumber, onEnter }: Props) {
     activeRef(node);
   };
 
-  const dimmed =
+  const collapsed =
     filter !== 'all' &&
     event.discipline !== filter &&
     event.discipline !== 'both';
 
   const papers = event.papers ?? (event.paper ? [event.paper] : []);
+  const summary = getEventSummary(event);
 
   // Single animate target merges reveal state and dim state. Opacity
   // transitions are short so the filter feels responsive; the initial
   // y reveal uses the longer ease.
-  const targetOpacity = revealInView ? (dimmed ? 0.12 : 1) : 0;
+  const targetOpacity = revealInView ? 1 : 0;
   const targetY = revealInView ? 0 : 32;
 
   return (
@@ -73,8 +96,9 @@ export function EventCard({ event, filter, footnoteNumber, onEnter }: Props) {
       animate={{ opacity: targetOpacity, y: targetY }}
       transition={!revealInView ? REVEAL_TRANSITION : DIM_TRANSITION}
       className={[
-        'relative grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-6 py-14 first:pt-8 scroll-mt-24',
-        dimmed ? 'pointer-events-none select-none' : '',
+        'relative grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-6 scroll-mt-24',
+        highlighted ? 'rounded-xl bg-white/55 ring-2 ring-[var(--era-accent)] ring-offset-8 ring-offset-[var(--era-bg)]' : '',
+        collapsed ? 'py-8' : 'py-14 first:pt-8',
       ].join(' ')}
       aria-labelledby={`${event.id}-headline`}
     >
@@ -93,14 +117,16 @@ export function EventCard({ event, filter, footnoteNumber, onEnter }: Props) {
               ? 'Experiment'
               : 'Theory · Experiment'}
         </div>
-        <ul className="mt-3 text-sm text-ink-600 leading-snug">
-          {event.discoverers.map((d) => (
-            <li key={d.name} className="mb-1">
-              <span className="font-medium text-ink-700">{d.name}</span>
-              <span className="block text-xs text-ink-500">{d.affiliation}</span>
-            </li>
-          ))}
-        </ul>
+        {!collapsed ? (
+          <ul className="mt-3 text-sm text-ink-600 leading-snug">
+            {event.discoverers.map((d) => (
+              <li key={d.name} className="mb-1">
+                <span className="font-medium text-ink-700">{d.name}</span>
+                <span className="block text-xs text-ink-500">{d.affiliation}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </header>
 
       {/* Body column */}
@@ -112,55 +138,65 @@ export function EventCard({ event, filter, footnoteNumber, onEnter }: Props) {
           {event.headline}
         </h3>
 
-        <div className="prose-essay mt-5 max-w-readable">
-          {event.narrative.map((para, i) => (
-            <p key={i} className={i === 0 ? 'drop-cap' : 'mt-5'}>
-              {para}
-            </p>
-          ))}
-        </div>
-
-        {event.equationsLatex && event.equationsLatex.length > 0 ? (
-          <div className="mt-6 max-w-readable">
-            {event.equationsLatex.map((tex, i) => (
-              <Equation key={i} tex={tex} />
-            ))}
-          </div>
-        ) : null}
-
-        {event.visual ? (
-          <figure className="mt-8 max-w-readable mx-0 text-ink-700">
-            <Visual visualKey={event.visual} />
-          </figure>
-        ) : null}
-
-        <p className="mt-8 max-w-readable text-ink-700">
-          <span className="ui-label mr-2" style={{ color: 'var(--era-accent, currentColor)' }}>
-            Why it mattered
-          </span>
-          <span className="italic">{event.whyItMattered}</span>
-        </p>
-
-        {event.anecdote ? (
-          <Anecdote anecdote={event.anecdote} footnoteNumber={footnoteNumber} />
-        ) : null}
-
-        {papers.length > 0 ? (
-          <ExpandablePanel
-            label={
-              papers.length > 1 ? 'Read the parallel papers' : 'Read the paper context'
-            }
-            openLabel={
-              papers.length > 1 ? 'Hide the parallel papers' : 'Hide the paper context'
-            }
-          >
-            <div className="space-y-6 max-w-readable">
-              {papers.map((p, i) => (
-                <PaperCitation key={i} citation={p} />
+        {collapsed ? (
+          <p className="mt-4 max-w-readable text-ink-600 leading-relaxed">
+            <GlossaryText text={summary} />
+          </p>
+        ) : (
+          <>
+            <div className="prose-essay mt-5 max-w-readable">
+              {event.narrative.map((para, i) => (
+                <p key={i} className={i === 0 ? 'drop-cap' : 'mt-5'}>
+                  <GlossaryText text={para} />
+                </p>
               ))}
             </div>
-          </ExpandablePanel>
-        ) : null}
+
+            {event.equationsLatex && event.equationsLatex.length > 0 ? (
+              <div className="mt-6 max-w-readable">
+                {event.equationsLatex.map((tex, i) => (
+                  <Equation key={i} tex={tex} />
+                ))}
+              </div>
+            ) : null}
+
+            {event.visual ? (
+              <figure className="mt-8 max-w-readable mx-0 text-ink-700">
+                <Visual visualKey={event.visual} />
+              </figure>
+            ) : null}
+
+            <p className="mt-8 max-w-readable text-ink-700">
+              <span className="ui-label mr-2" style={{ color: 'var(--era-accent, currentColor)' }}>
+                Why it mattered
+              </span>
+              <span className="italic">
+                <GlossaryText text={event.whyItMattered} />
+              </span>
+            </p>
+
+            {event.anecdote ? (
+              <Anecdote anecdote={event.anecdote} footnoteNumber={footnoteNumber} />
+            ) : null}
+
+            {papers.length > 0 ? (
+              <ExpandablePanel
+                label={
+                  papers.length > 1 ? 'Read the parallel papers' : 'Read the paper context'
+                }
+                openLabel={
+                  papers.length > 1 ? 'Hide the parallel papers' : 'Hide the paper context'
+                }
+              >
+                <div className="space-y-6 max-w-readable">
+                  {papers.map((p, i) => (
+                    <PaperCitation key={i} citation={p} />
+                  ))}
+                </div>
+              </ExpandablePanel>
+            ) : null}
+          </>
+        )}
       </div>
     </motion.article>
   );

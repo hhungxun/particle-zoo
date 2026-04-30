@@ -12,6 +12,8 @@ interface Props {
   discovered: Set<string>;
   /** Map from particle id → the event that discovered it. */
   particleEventMap?: Record<string, DiscoveryInfo>;
+  selectedParticleId?: string;
+  onParticleSelect?: (particleId: string, info?: DiscoveryInfo) => void;
 }
 
 const CATEGORY_STYLES: Record<
@@ -48,9 +50,14 @@ const CATEGORY_STYLES: Record<
  * their category colour.  Clicking a lit cell scrolls to the event that
  * discovered it.
  */
-export function StandardModelTracker({ discovered, particleEventMap = {} }: Props) {
-  const isLit = (id: string) =>
-    discovered.has(id) || discovered.has(PARTICLE_ALIASES[id]);
+export function StandardModelTracker({
+  discovered,
+  particleEventMap = {},
+  selectedParticleId,
+  onParticleSelect,
+}: Props) {
+  const isLit = useCallback((id: string) =>
+    discovered.has(id) || discovered.has(PARTICLE_ALIASES[id]), [discovered]);
 
   const total = SM_PARTICLES.length;
   const litCount = SM_PARTICLES.filter((p) => isLit(p.id)).length;
@@ -63,12 +70,13 @@ export function StandardModelTracker({ discovered, particleEventMap = {} }: Prop
 
   const handleClick = useCallback((particleId: string) => {
     const info = particleEventMap[particleId];
+    onParticleSelect?.(particleId, info);
     if (!info) return;
     const el = document.getElementById(info.eventId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [particleEventMap]);
+  }, [onParticleSelect, particleEventMap]);
 
   const handleMouseEnter = useCallback((
     e: React.MouseEvent,
@@ -77,14 +85,17 @@ export function StandardModelTracker({ discovered, particleEventMap = {} }: Prop
   ) => {
     const info = particleEventMap[particleId];
     const lines = info
-      ? [`${particleName} — discovered ${info.yearLabel}`, info.headline]
-      : [particleName, 'Not yet discovered'];
+      ? [
+          `${particleName} — ${isLit(particleId) ? 'reached' : 'first appears'} ${info.yearLabel}`,
+          info.headline,
+        ]
+      : [particleName, 'No timeline event yet'];
     setTooltip({
       x: e.clientX,
       y: e.clientY - 8,
       content: lines.join('\n'),
     });
-  }, [particleEventMap]);
+  }, [isLit, particleEventMap]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     setTooltip((prev) => (prev ? { ...prev, x: e.clientX, y: e.clientY - 8 } : prev));
@@ -107,19 +118,31 @@ export function StandardModelTracker({ discovered, particleEventMap = {} }: Prop
     <>
       <aside
         aria-label="Standard Model tracker"
-        className="hidden xl:block fixed right-6 top-24 z-20 w-56"
+        className="hidden xl:block fixed right-8 top-24 z-20 w-72"
       >
-        <div className="bg-paper/90 backdrop-blur-md border border-rule rounded-xl p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xs font-semibold tracking-wide text-ink-700 uppercase">
+        <div className="bg-paper/90 backdrop-blur-md border border-rule rounded-lg p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div>
+              <h3 className="text-sm font-semibold tracking-wide text-ink-700 uppercase">
               Standard Model
-            </h3>
-            <span className="text-[10px] tabular-nums text-ink-500">
+              </h3>
+              <p className="mt-0.5 text-[10px] leading-snug text-ink-500">
+                Particles reached so far
+              </p>
+            </div>
+            <span className="text-xs tabular-nums text-ink-600 font-sans">
               {litCount}/{total}
             </span>
           </div>
 
-          <div className="grid grid-cols-4 gap-1.5">
+          <div className="h-1.5 rounded-full bg-ink-100 overflow-hidden mb-3">
+            <div
+              className="h-full rounded-full bg-ink-700 transition-all duration-500"
+              style={{ width: `${(litCount / total) * 100}%` }}
+            />
+          </div>
+
+          <div className="grid grid-cols-4 gap-2">
             {gridOrder.map((row, ri) =>
               row.map((pid, ci) => {
                 if (!pid) {
@@ -128,7 +151,8 @@ export function StandardModelTracker({ discovered, particleEventMap = {} }: Prop
                 const p = SM_PARTICLES.find((x) => x.id === pid)!;
                 const styles = CATEGORY_STYLES[p.category];
                 const lit = isLit(p.id);
-                const clickable = lit && particleEventMap[p.id];
+                const clickable = Boolean(particleEventMap[p.id]);
+                const selected = selectedParticleId === p.id;
 
                 return (
                   <button
@@ -144,13 +168,14 @@ export function StandardModelTracker({ discovered, particleEventMap = {} }: Prop
                       lit
                         ? `${styles.bg} ${styles.text} ${styles.border} opacity-100 shadow-sm`
                         : 'bg-ink-100 border-transparent opacity-25 grayscale',
+                      selected ? 'ring-2 ring-ink-800 ring-offset-2 ring-offset-paper' : '',
                       clickable
                         ? 'cursor-pointer hover:scale-105 hover:shadow-md'
                         : 'cursor-default',
                     ].join(' ')}
-                    aria-label={lit ? `${p.name}, discovered` : `${p.name}, not yet discovered`}
+                    aria-label={clickable ? `${p.name}, jump to first event` : `${p.name}, no timeline event yet`}
                   >
-                    <span className="text-base font-bold leading-none">{p.symbol}</span>
+                    <span className="text-lg font-bold leading-none">{p.symbol}</span>
                   </button>
                 );
               }),
@@ -158,7 +183,7 @@ export function StandardModelTracker({ discovered, particleEventMap = {} }: Prop
           </div>
 
           {/* Mini legend */}
-          <div className="mt-2 flex flex-wrap gap-x-2 gap-y-0.5">
+          <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1">
             {(
               [
                 ['quark', 'Quarks', 'bg-violet-300'],
@@ -168,15 +193,15 @@ export function StandardModelTracker({ discovered, particleEventMap = {} }: Prop
               ] as const
             ).map(([key, label, dot]) => (
               <div key={key} className="flex items-center gap-1">
-                <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
-                <span className="text-[9px] text-ink-500">{label}</span>
+                <span className={`w-2 h-2 rounded-full ${dot}`} />
+                <span className="text-[10px] text-ink-500">{label}</span>
               </div>
             ))}
           </div>
 
           {/* Keyboard hint */}
-          <div className="mt-2 text-[8px] text-ink-400 text-right">
-            Keys: T · E · A
+          <div className="mt-3 text-[9px] text-ink-400 text-right">
+            Click a lit particle to jump to its first event.
           </div>
         </div>
       </aside>
