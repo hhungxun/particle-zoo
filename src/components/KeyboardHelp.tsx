@@ -6,10 +6,6 @@ interface Props {
 }
 
 const SHORTCUTS = [
-  { key: 'T', desc: 'Show only theory events' },
-  { key: 'E', desc: 'Show only experiment events' },
-  { key: 'A', desc: 'Show all events' },
-  { key: 'C', desc: 'Compare theory and experiment' },
   { key: '?', desc: 'Toggle this help panel' },
   { key: '↑ / ↓', desc: 'Navigate left sidebar (when focused)' },
 ];

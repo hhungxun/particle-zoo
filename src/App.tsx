@@ -116,16 +116,12 @@ function App() {
     }, 5000);
   }, []);
 
-  // Keyboard shortcuts: T = theory, E = experiment, A = all, C = compare, ? = help
+  // Keyboard shortcut: ? = help
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       const key = e.key.toLowerCase();
-      if (key === 't') setFilter('theory');
-      else if (key === 'e') setFilter('experiment');
-      else if (key === 'a') setFilter('all');
-      else if (key === 'c') setFilter('compare');
-      else if (key === '?') setShowHelp((s) => !s);
+      if (key === '?') setShowHelp((s) => !s);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
